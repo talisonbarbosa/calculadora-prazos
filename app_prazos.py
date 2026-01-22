@@ -6,7 +6,7 @@ import pandas as pd
 from fpdf import FPDF
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
-st.set_page_config(page_title="Calculadora de Prazos CPC", page_icon="⚖️")
+st.set_page_config(page_title="Calculadora DERKIAM", page_icon="⚖️")
 
 # --- FUNÇÃO DE GERAR PDF ---
 class PDF(FPDF):
@@ -17,10 +17,19 @@ class PDF(FPDF):
         self.ln(5)
 
     def footer(self):
-        # Rodapé com número da página
+        # Posicionamento a 1.5cm do fim da página
         self.set_y(-15)
         self.set_font('Arial', 'I', 8)
-        self.cell(0, 10, f'Página {self.page_no()}', 0, 0, 'C')
+        self.set_text_color(128) # Cinza para o rodapé
+        
+        # Página na esquerda
+        self.cell(0, 10, f'Página {self.page_no()}', 0, 0, 'L')
+        
+        # Créditos na direita (Alinhado à direita com margem zero)
+        # Usamos cell(0...) mas o texto ficaria na esquerda se não forçar o 'R' com ln=0 não funciona bem.
+        # Truque do FPDF para alinhar à direita na mesma linha:
+        self.set_x(-100) # Move cursor para a direita
+        self.cell(0, 10, 'FEITO POR TALISON OLIVEIRA BARBOSA', 0, 0, 'R')
 
 def criar_pdf(nome_escritorio, dt_disp, dt_pub, dt_inicio, dt_final, dias_prazo, df_detalhes):
     pdf = PDF()
@@ -28,8 +37,10 @@ def criar_pdf(nome_escritorio, dt_disp, dt_pub, dt_inicio, dt_final, dias_prazo,
     pdf.set_font("Arial", size=12)
 
     # 1. Cabeçalho do Escritório
-    pdf.set_font("Arial", 'B', 12)
-    pdf.cell(0, 10, f"Escritório: {nome_escritorio}", 0, 1, 'L')
+    pdf.set_font("Arial", 'B', 14)
+    pdf.cell(0, 10, f"{nome_escritorio}", 0, 1, 'L')
+    pdf.set_font("Arial", 'I', 10)
+    pdf.cell(0, 6, "Sistema de Controle de Prazos", 0, 1, 'L')
     pdf.ln(5)
 
     # 2. Resumo das Datas
@@ -68,7 +79,7 @@ def criar_pdf(nome_escritorio, dt_disp, dt_pub, dt_inicio, dt_final, dias_prazo,
         pdf.cell(30, 8, row['Data'], 1, 0, 'C')
         pdf.cell(40, 8, row['Dia da Semana'], 1, 0, 'C')
         
-        # Tratamento de caracteres especiais simples para o FPDF (latin-1)
+        # Tratamento de caracteres especiais
         status_clean = row['Status'].replace("❌", "X").replace("✅", "OK")
         pdf.cell(80, 8, status_clean, 1, 0, 'L')
         
@@ -93,11 +104,11 @@ def get_next_business_day(date_obj):
     return next_day
 
 # --- INTERFACE ---
-st.title("⚖️ Calculadora de Prazos Processuais")
+st.title("⚖️ Calculadora DERKIAM")
 st.markdown("### Sistema de Contagem (CPC/CNJ)")
 
-# Input do Nome do Escritório
-nome_escritorio = st.text_input("Nome do Escritório / Advogado:", "Meu Escritório de Advocacia")
+# Input do Nome do Escritório (Agora fixo com o valor padrão)
+nome_escritorio = st.text_input("Nome do Escritório / Advogado:", "DERKIAM ADVOCACIA")
 
 col1, col2 = st.columns(2)
 with col1:
@@ -164,9 +175,11 @@ if st.button("CALCULAR PRAZO", type="primary"):
     st.download_button(
         label="Baixar Relatório em PDF",
         data=pdf_bytes,
-        file_name=f"prazo_cpc_{dt_final.strftime('%d-%m-%Y')}.pdf",
+        file_name=f"prazo_DERKIAM_{dt_final.strftime('%d-%m-%Y')}.pdf",
         mime="application/pdf"
     )
 
     st.subheader("🔎 Detalhamento na Tela")
     st.dataframe(df_detalhes, use_container_width=True, hide_index=True)
+    
+    st.caption("Desenvolvido por Talison Oliveira Barbosa")
