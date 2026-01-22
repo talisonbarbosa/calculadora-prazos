@@ -11,24 +11,16 @@ st.set_page_config(page_title="Calculadora DERKIAM", page_icon="⚖️")
 # --- FUNÇÃO DE GERAR PDF ---
 class PDF(FPDF):
     def header(self):
-        # Título do PDF
         self.set_font('Arial', 'B', 15)
-        self.cell(0, 10, 'Relatório de Contagem de Prazo - CPC/CNJ', 0, 1, 'C')
+        self.cell(0, 10, 'Relatorio de Contagem de Prazo - CPC/CNJ', 0, 1, 'C')
         self.ln(5)
 
     def footer(self):
-        # Posicionamento a 1.5cm do fim da página
         self.set_y(-15)
         self.set_font('Arial', 'I', 8)
-        self.set_text_color(128) # Cinza para o rodapé
-        
-        # Página na esquerda
-        self.cell(0, 10, f'Página {self.page_no()}', 0, 0, 'L')
-        
-        # Créditos na direita (Alinhado à direita com margem zero)
-        # Usamos cell(0...) mas o texto ficaria na esquerda se não forçar o 'R' com ln=0 não funciona bem.
-        # Truque do FPDF para alinhar à direita na mesma linha:
-        self.set_x(-100) # Move cursor para a direita
+        self.set_text_color(128)
+        self.cell(0, 10, f'Pagina {self.page_no()}', 0, 0, 'L')
+        self.set_x(-100)
         self.cell(0, 10, 'FEITO POR TALISON OLIVEIRA BARBOSA', 0, 0, 'R')
 
 def criar_pdf(nome_escritorio, dt_disp, dt_pub, dt_inicio, dt_final, dias_prazo, df_detalhes):
@@ -36,65 +28,63 @@ def criar_pdf(nome_escritorio, dt_disp, dt_pub, dt_inicio, dt_final, dias_prazo,
     pdf.add_page()
     pdf.set_font("Arial", size=12)
 
-    # 1. Cabeçalho do Escritório
     pdf.set_font("Arial", 'B', 14)
     pdf.cell(0, 10, f"{nome_escritorio}", 0, 1, 'L')
     pdf.set_font("Arial", 'I', 10)
-    pdf.cell(0, 6, "Sistema de Controle de Prazos", 0, 1, 'L')
+    pdf.cell(0, 6, "Sistema de Controle de Prazos - Com Recesso Forense", 0, 1, 'L')
     pdf.ln(5)
 
-    # 2. Resumo das Datas
     pdf.set_font("Arial", 'B', 12)
     pdf.cell(0, 10, "Resumo dos Marcos Temporais:", 0, 1, 'L')
     pdf.set_font("Arial", size=11)
     
     if dt_disp:
-        pdf.cell(0, 8, f"Disponibilização (DJEN): {dt_disp.strftime('%d/%m/%Y')}", 0, 1)
+        pdf.cell(0, 8, f"Disponibilizacao (DJEN): {dt_disp.strftime('%d/%m/%Y')}", 0, 1)
     
-    pdf.cell(0, 8, f"Data da Publicação: {dt_pub.strftime('%d/%m/%Y')}", 0, 1)
-    pdf.cell(0, 8, f"Início da Contagem: {dt_inicio.strftime('%d/%m/%Y')}", 0, 1)
-    pdf.cell(0, 8, f"Prazo Total: {dias_prazo} dias úteis", 0, 1)
+    pdf.cell(0, 8, f"Data da Publicacao: {dt_pub.strftime('%d/%m/%Y')}", 0, 1)
+    pdf.cell(0, 8, f"Inicio da Contagem: {dt_inicio.strftime('%d/%m/%Y')}", 0, 1)
+    pdf.cell(0, 8, f"Prazo Total: {dias_prazo} dias uteis", 0, 1)
     
-    pdf.set_text_color(220, 50, 50) # Vermelho para destaque
+    pdf.set_text_color(220, 50, 50)
     pdf.set_font("Arial", 'B', 12)
     pdf.cell(0, 10, f"DATA FATAL (VENCIMENTO): {dt_final.strftime('%d/%m/%Y')}", 0, 1)
-    pdf.set_text_color(0, 0, 0) # Volta para preto
+    pdf.set_text_color(0, 0, 0)
     pdf.ln(5)
 
-    # 3. Tabela de Detalhamento
-    pdf.set_font("Arial", 'B', 12)
-    pdf.cell(0, 10, "Detalhamento Dia a Dia:", 0, 1, 'L')
-    
-    # Cabeçalho da Tabela
     pdf.set_font("Arial", 'B', 10)
-    pdf.set_fill_color(200, 220, 255) # Azul claro
+    pdf.set_fill_color(200, 220, 255)
     pdf.cell(30, 8, "Data", 1, 0, 'C', 1)
-    pdf.cell(40, 8, "Dia da Semana", 1, 0, 'C', 1)
-    pdf.cell(80, 8, "Status", 1, 0, 'C', 1)
-    pdf.cell(40, 8, "Contagem", 1, 1, 'C', 1)
+    pdf.cell(40, 8, "Dia Semana", 1, 0, 'C', 1)
+    pdf.cell(85, 8, "Status", 1, 0, 'C', 1)
+    pdf.cell(35, 8, "Contagem", 1, 1, 'C', 1)
 
-    # Linhas da Tabela
-    pdf.set_font("Arial", size=10)
+    pdf.set_font("Arial", size=9)
     for index, row in df_detalhes.iterrows():
-        pdf.cell(30, 8, row['Data'], 1, 0, 'C')
-        pdf.cell(40, 8, row['Dia da Semana'], 1, 0, 'C')
-        
-        # Tratamento de caracteres especiais
+        pdf.cell(30, 7, row['Data'], 1, 0, 'C')
+        pdf.cell(40, 7, row['Dia da Semana'], 1, 0, 'C')
         status_clean = row['Status'].replace("❌", "X").replace("✅", "OK")
-        pdf.cell(80, 8, status_clean, 1, 0, 'L')
-        
-        pdf.cell(40, 8, row['Contagem do Prazo'], 1, 1, 'C')
+        pdf.cell(85, 7, status_clean[:45], 1, 0, 'L')
+        pdf.cell(35, 7, row['Contagem do Prazo'], 1, 1, 'C')
 
     return pdf.output(dest='S').encode('latin-1', 'replace')
 
-# --- FUNÇÕES AUXILIARES ---
+# --- LÓGICA DE NEGÓCIO ---
 def nome_dia_pt(data):
-    dias = {0: "Segunda-feira", 1: "Terça-feira", 2: "Quarta-feira", 3: "Quinta-feira", 4: "Sexta-feira", 5: "Sábado", 6: "Domingo"}
+    dias = {0: "Segunda-feira", 1: "Terca-feira", 2: "Quarta-feira", 3: "Quinta-feira", 4: "Sexta-feira", 5: "Sabado", 6: "Domingo"}
     return dias[data.weekday()]
 
 br_holidays = holidays.Brazil()
 
+def is_recesso(data):
+    """Verifica suspensão do Art. 220 do CPC (20/12 a 20/01)"""
+    mes = data.month
+    dia = data.day
+    if (mes == 12 and dia >= 20) or (mes == 1 and dia <= 20):
+        return True
+    return False
+
 def is_business_day(date_obj):
+    if is_recesso(date_obj): return False
     if date_obj.weekday() >= 5 or date_obj in br_holidays: return False
     return True
 
@@ -105,9 +95,8 @@ def get_next_business_day(date_obj):
 
 # --- INTERFACE ---
 st.title("⚖️ Calculadora DERKIAM")
-st.markdown("### Sistema de Contagem (CPC/CNJ)")
+st.markdown("### Contagem CPC/CNJ com Recesso Forense (Art. 220)")
 
-# Input do Nome do Escritório (Agora fixo com o valor padrão)
 nome_escritorio = st.text_input("Nome do Escritório / Advogado:", "DERKIAM ADVOCACIA")
 
 col1, col2 = st.columns(2)
@@ -118,7 +107,6 @@ with col2:
     dias_prazo = st.number_input("Prazo (dias úteis):", min_value=1, value=15)
 
 if st.button("CALCULAR PRAZO", type="primary"):
-    # Lógica de Cálculo
     if tipo_data == "Disponibilização (DJEN)":
         dt_disp = data_input
         dt_pub = get_next_business_day(dt_disp)
@@ -128,30 +116,38 @@ if st.button("CALCULAR PRAZO", type="primary"):
         dt_pub = data_input
         dt_inicio = get_next_business_day(dt_pub)
     
-    # Loop de Contagem
     lista_detalhes = []
     dias_contados = 0
     data_atual = dt_inicio
     
-    while dias_contados < dias_prazo:
+    # Limite de segurança para evitar loops infinitos
+    max_iter = 500 
+    cont_iter = 0
+
+    while dias_contados < dias_prazo and cont_iter < max_iter:
+        cont_iter += 1
+        eh_recesso = is_recesso(data_atual)
         eh_fds = data_atual.weekday() >= 5
         eh_feriado = data_atual in br_holidays
         nome_feriado = br_holidays.get(data_atual) if eh_feriado else ""
         
-        if eh_fds:
+        status = ""
+        if eh_recesso:
+            status = "❌ SUSPENSO (Recesso Art. 220 CPC)"
+        elif eh_fds:
             status = "❌ Fim de Semana"
         elif eh_feriado:
             status = f"❌ Feriado ({nome_feriado})"
         else:
             dias_contados += 1
-            status = "✅ Dia Útil"
+            status = "✅ Dia Util"
             if dias_contados == dias_prazo: dt_final = data_atual
 
         lista_detalhes.append({
             "Data": data_atual.strftime("%d/%m/%Y"),
             "Dia da Semana": nome_dia_pt(data_atual),
             "Status": status,
-            "Contagem do Prazo": f"{dias_contados}º Dia" if status == "✅ Dia Útil" else "-"
+            "Contagem do Prazo": f"{dias_contados}o Dia" if status == "✅ Dia Util" else "-"
         })
         
         if dias_contados < dias_prazo: data_atual += timedelta(days=1)
@@ -166,7 +162,6 @@ if st.button("CALCULAR PRAZO", type="primary"):
     
     st.success(f"O prazo termina em **{dt_final.strftime('%d/%m/%Y')}** ({nome_dia_pt(dt_final)}).")
 
-    # Área do PDF
     df_detalhes = pd.DataFrame(lista_detalhes)
     st.subheader("📄 Exportar Relatório")
     
@@ -181,5 +176,4 @@ if st.button("CALCULAR PRAZO", type="primary"):
 
     st.subheader("🔎 Detalhamento na Tela")
     st.dataframe(df_detalhes, use_container_width=True, hide_index=True)
-    
     st.caption("Desenvolvido por Talison Oliveira Barbosa")
